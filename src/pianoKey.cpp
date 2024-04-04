@@ -16,7 +16,6 @@ const float freqList[MULTIPLEX_NUM][MULTIPLEX_CH_NUM] = {
     {2349.3, 2489.0, 2637.0, 2793.8, 2960.0, 3136.0, 3322.4, 3520.0, 3729.3, 3951.1, 4186.0, 4434.9, 4698.6, 4978.0},
 };
 
-
 void pianoKey::init() {
   for (uint32_t multiplx = 0; multiplx < MULTIPLEX_NUM; multiplx++) {
     pinMode(upperDIN[multiplx], INPUT);

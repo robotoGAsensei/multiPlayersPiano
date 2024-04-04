@@ -1,6 +1,7 @@
+#include "sin_table.h"
+
 #include <stdio.h>
 
-#include "sin_table.h"
 
 const float sin_table[SIN_TABLE_NUM] = {
     0.0000000,

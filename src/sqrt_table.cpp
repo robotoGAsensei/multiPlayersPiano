@@ -1,6 +1,7 @@
+#include "sqrt_table.h"
+
 #include <stdio.h>
 
-#include "sqrt_table.h"
 
 const float sqrt_table[SQRT_TABLE_NUM] = {
     1.000000,

@@ -1,9 +1,10 @@
+#include "pwm.h"
+
 #include <esp32-hal.h>  // C:\Users\nb1e4\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.14\cores\esp32
 #include <stdio.h>
 
 #include "HardwareSerial.h"
 #include "pianoKey.h"
-#include "pwm.h"
 #include "sin_table.h"
 #include "sqrt_table.h"
 

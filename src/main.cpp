@@ -28,25 +28,16 @@ void IRAM_ATTR onTimer() {
 }
 
 void taskOnAppCPU(void *pvParameters) {
-  uint32_t        isrCount, isrTime, diffIsrCount;
   static uint32_t isrCountPast;
   static uint32_t multiplxCH;
 
   while (1) {
-    portENTER_CRITICAL(&timerMux);
-    isrCount = isrCounter;
-    isrTime  = lastIsrAt;
-    portEXIT_CRITICAL(&timerMux);
-
     if (xSemaphoreTake(timerSemAppCPU, 0) == pdTRUE) {
-      diffIsrCount = isrCount - isrCountPast;
-      isrCountPast = isrCount;
       // キーボードの状態を更新しボリュームを取得する
       for (int i = 0; i < MULTIPLEX_NUM; i++) pianokey.process(i, multiplxCH);
       // マルチプレクサに出力するセレクト信号
       if (++multiplxCH > MULTIPLEX_CH_NUM - 1) multiplxCH = 0;
       multiplex.output(multiplxCH);
-      // Serial.printf("%d\n",diffIsrCount);
     }
     delay(1);
   }
@@ -57,12 +48,12 @@ void taskOnProCPU(void *pvParameters) {
   static uint32_t isrCountPast;
 
   while (1) {
-    portENTER_CRITICAL(&timerMux);
-    isrCount = isrCounter;
-    isrTime  = lastIsrAt;
-    portEXIT_CRITICAL(&timerMux);
-
     if (xSemaphoreTake(timerSemProCPU, 0) == pdTRUE) {
+      portENTER_CRITICAL(&timerMux);
+      isrCount = isrCounter;
+      isrTime  = lastIsrAt;
+      portEXIT_CRITICAL(&timerMux);
+
       diffIsrCount = isrCount - isrCountPast;
       isrCountPast = isrCount;
       pwm.output(isrCount, &pianokey);

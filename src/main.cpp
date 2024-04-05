@@ -3,6 +3,7 @@
 #include "multiplex.h"
 #include "PianoKey.h"
 #include "pwm.h"
+#include "util.h"
 
 hw_timer_t                *timer = NULL;
 volatile SemaphoreHandle_t timerSemAppCPU, timerSemProCPU;
@@ -86,12 +87,12 @@ void setup() {
   timerSemProCPU = xSemaphoreCreateBinary();
   // Use 1st timer of 4 (counted from zero).
   // Clock count at 40MHz(=80MHz/2). By the prescaler 2 which must be in the range from 2 to 655535
-  timer = timerBegin(0, 2, true);
+  timer = timerBegin(0, PRESCALE, true);
   // Attach onTimer function to our timer.
   timerAttachInterrupt(timer, &onTimer, true);
   // Set alarm to call onTimer function every 10us(400 = 40,000,000Hz / 100,000Hz)
   // Repeat the alarm (third parameter)
-  timerAlarmWrite(timer, 400, true);
+  timerAlarmWrite(timer, PRESCALED_CLOCK / TASK_FREQ, true);
   // Start an alarm
   timerAlarmEnable(timer);
 

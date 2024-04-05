@@ -26,14 +26,14 @@ void PianoKey::init() {
   }
 }
 
-void PianoKey::process(uint32_t octave, uint32_t multiplxCH) {
-  polling(octave, multiplxCH);
-  stateLower(octave, multiplxCH);  // Uppwer接点んが機能せずLower接点のみが機能
-  // state(octave, multiplxCH);//Upper接点、Lower接点の両方ともに機能
+void PianoKey::process(uint32_t multiplx, uint32_t multiplxCH) {
+  polling(multiplx, multiplxCH);
+  stateLower(multiplx, multiplxCH);  // Uppwer接点んが機能せずLower接点のみが機能
+  // state(multiplx, multiplxCH);//Upper接点、Lower接点の両方ともに機能
 }
 
-void PianoKey::polling(uint32_t octave, uint32_t multiplxCH) {
-  key_st *ppianokey = &key[octave][multiplxCH];
+void PianoKey::polling(uint32_t multiplx, uint32_t multiplxCH) {
+  key_st *ppianokey = &key[multiplx][multiplxCH];
   /*
     例：第0オクターブ
             upper   lower   mux_tone  key
@@ -54,12 +54,12 @@ void PianoKey::polling(uint32_t octave, uint32_t multiplxCH) {
     Free2   IO36    IO39    14        key[0][14]
     Free3   IO36    IO39    15        key[0][15]
   */
-  ppianokey->upper = digitalRead(upperDIN[octave]);
-  ppianokey->lower = digitalRead(lowerDIN[octave]);
+  ppianokey->upper = digitalRead(upperDIN[multiplx]);
+  ppianokey->lower = digitalRead(lowerDIN[multiplx]);
 }
 
-void PianoKey::stateLower(uint32_t octave, uint32_t multiplxCH) {
-  key_st *ppianokey = &key[octave][multiplxCH];
+void PianoKey::stateLower(uint32_t multiplx, uint32_t multiplxCH) {
+  key_st *ppianokey = &key[multiplx][multiplxCH];
 
   if (ppianokey->lower == true)
     ppianokey->volume = 1.0;
@@ -67,8 +67,8 @@ void PianoKey::stateLower(uint32_t octave, uint32_t multiplxCH) {
     ppianokey->volume = 0.0;
 }
 
-void PianoKey::state(uint32_t octave, uint32_t multiplxCH) {
-  key_st *ppianokey = &key[octave][multiplxCH];
+void PianoKey::state(uint32_t multiplx, uint32_t multiplxCH) {
+  key_st *ppianokey = &key[multiplx][multiplxCH];
 
   switch (ppianokey->seqID) {
     case STEP00:                 /* キーが押されていない状態 */

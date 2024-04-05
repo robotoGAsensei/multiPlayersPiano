@@ -50,7 +50,7 @@ typedef enum {
 class PianoKey {
  public:
   void init();
-  void process(uint32_t octave, uint32_t addr);
+  void process(uint32_t multiplx, uint32_t multiplxCH);
 
   typedef struct
   {
@@ -66,9 +66,9 @@ class PianoKey {
   key_st key[MULTIPLEX_NUM][MULTIPLEX_CH_NUM];
 
  private:
-  void polling(uint32_t octave, uint32_t addr);
-  void stateLower(uint32_t octave, uint32_t addr);
-  void state(uint32_t octave, uint32_t addr);
+  void polling(uint32_t multiplx, uint32_t multiplxCH);
+  void stateLower(uint32_t multiplx, uint32_t multiplxCH);
+  void state(uint32_t multiplx, uint32_t multiplxCH);
 };
 
 #endif /* PIANOKEY_H */

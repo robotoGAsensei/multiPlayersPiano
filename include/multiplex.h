@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-class multiplex {
+class Multiplex {
  public:
   void init(void);
   void output(uint32_t address);

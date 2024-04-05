@@ -5,10 +5,10 @@
 
 #include "pianoKey.h"
 
-class pwm {
+class Pwm {
  public:
   void init(void);
-  void output(uint32_t time_count, pianoKey *pkey);
+  void output(uint32_t time_count, PianoKey *ppianokey);
 
  private:
 };

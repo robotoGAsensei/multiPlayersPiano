@@ -47,7 +47,7 @@ typedef enum {
 } seqID_t;
 
 // クラスの定義
-class pianoKey {
+class PianoKey {
  public:
   void init();
   void process(uint32_t octave, uint32_t addr);

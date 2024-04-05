@@ -1,12 +1,12 @@
 #ifndef DAC_H
 #define DAC_H
 
-#include "pianoKey.h"
+#include "PianoKey.h"
 
-class dac {
+class Dac {
  public:
-  void init(pianoKey *pkey);
-  void output(pianoKey *pkey);
+  void init(PianoKey *ppianokey);
+  void output(PianoKey *ppianokey);
 
  private:
 };

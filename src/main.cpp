@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "multiplex.h"
-#include "pianoKey.h"
+#include "PianoKey.h"
 #include "pwm.h"
 
 hw_timer_t                *timer = NULL;
@@ -10,9 +10,9 @@ portMUX_TYPE               timerMux   = portMUX_INITIALIZER_UNLOCKED;
 volatile uint32_t          isrCounter = 0;
 volatile uint32_t          lastIsrAt  = 0;
 
-pianoKey  key;
-multiplex multiplex;
-pwm       pwm;
+PianoKey  pianokey;
+Multiplex multiplex;
+Pwm       pwm;
 
 void IRAM_ATTR onTimer() {
   // Increment the counter and set the time of ISR
@@ -41,7 +41,7 @@ void taskOnAppCPU(void *pvParameters) {
       diffIsrCount = isrCount - isrCountPast;
       isrCountPast = isrCount;
       // キーボードの状態を更新しボリュームを取得する
-      for (int i = 0; i < MULTIPLEX_NUM; i++) key.process(i, multiplxCH);
+      for (int i = 0; i < MULTIPLEX_NUM; i++) pianokey.process(i, multiplxCH);
       // マルチプレクサに出力するセレクト信号
       if (++multiplxCH > MULTIPLEX_CH_NUM - 1) multiplxCH = 0;
       multiplex.output(multiplxCH);
@@ -64,7 +64,7 @@ void taskOnProCPU(void *pvParameters) {
     if (xSemaphoreTake(timerSemProCPU, 0) == pdTRUE) {
       diffIsrCount = isrCount - isrCountPast;
       isrCountPast = isrCount;
-      pwm.output(isrCount, &key);
+      pwm.output(isrCount, &pianokey);
       // If heavy process were included, this function would be less activated.
       // diffIsrCount should be 1 if the process is light enough. 1 is the desired.
       // The number greater than 1 means miss activation due to heavy process or interruption done by OS.
@@ -77,7 +77,7 @@ void setup() {
   Serial.begin(115200);
 
   // タスクを作る前にpinModeの設定をする必要がある
-  key.init();
+  pianokey.init();
   multiplex.init();
   pwm.init();
 

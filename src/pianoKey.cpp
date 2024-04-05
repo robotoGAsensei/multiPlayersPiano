@@ -16,7 +16,7 @@ const float freqList[MULTIPLEX_NUM][MULTIPLEX_CH_NUM] = {
     {2349.3, 2489.0, 2637.0, 2793.8, 2960.0, 3136.0, 3322.4, 3520.0, 3729.3, 3951.1, 4186.0, 4434.9, 4698.6, 4978.0},
 };
 
-void pianoKey::init() {
+void PianoKey::init() {
   for (uint32_t multiplx = 0; multiplx < MULTIPLEX_NUM; multiplx++) {
     pinMode(upperDIN[multiplx], INPUT);
     pinMode(lowerDIN[multiplx], INPUT);
@@ -26,16 +26,14 @@ void pianoKey::init() {
   }
 }
 
-void pianoKey::process(uint32_t octave, uint32_t multiplxCH) {
-  key_st *pkey = &key[octave][multiplxCH];
-
+void PianoKey::process(uint32_t octave, uint32_t multiplxCH) {
   polling(octave, multiplxCH);
   stateLower(octave, multiplxCH);  // Uppwer接点んが機能せずLower接点のみが機能
   // state(octave, multiplxCH);//Upper接点、Lower接点の両方ともに機能
 }
 
-void pianoKey::polling(uint32_t octave, uint32_t multiplxCH) {
-  key_st *pkey = &key[octave][multiplxCH];
+void PianoKey::polling(uint32_t octave, uint32_t multiplxCH) {
+  key_st *ppianokey = &key[octave][multiplxCH];
   /*
     例：第0オクターブ
             upper   lower   mux_tone  key
@@ -56,59 +54,59 @@ void pianoKey::polling(uint32_t octave, uint32_t multiplxCH) {
     Free2   IO36    IO39    14        key[0][14]
     Free3   IO36    IO39    15        key[0][15]
   */
-  pkey->upper = digitalRead(upperDIN[octave]);
-  pkey->lower = digitalRead(lowerDIN[octave]);
+  ppianokey->upper = digitalRead(upperDIN[octave]);
+  ppianokey->lower = digitalRead(lowerDIN[octave]);
 }
 
-void pianoKey::stateLower(uint32_t octave, uint32_t multiplxCH) {
-  key_st *pkey = &key[octave][multiplxCH];
+void PianoKey::stateLower(uint32_t octave, uint32_t multiplxCH) {
+  key_st *ppianokey = &key[octave][multiplxCH];
 
-  if (pkey->lower == true)
-    pkey->volume = 1.0;
+  if (ppianokey->lower == true)
+    ppianokey->volume = 1.0;
   else
-    pkey->volume = 0.0;
+    ppianokey->volume = 0.0;
 }
 
-void pianoKey::state(uint32_t octave, uint32_t multiplxCH) {
-  key_st *pkey = &key[octave][multiplxCH];
+void PianoKey::state(uint32_t octave, uint32_t multiplxCH) {
+  key_st *ppianokey = &key[octave][multiplxCH];
 
-  switch (pkey->seqID) {
+  switch (ppianokey->seqID) {
     case STEP00:                 /* キーが押されていない状態 */
-      if (pkey->upper == true) { /* キーが押された */
-        pkey->start = millis();
-        pkey->seqID = STEP01;
-      } else if ((pkey->upper == false) &&
-                 (pkey->lower == false)) { /* 押してない状態を継続 */
-      } else if ((pkey->upper == false) && (pkey->lower == true)) {
+      if (ppianokey->upper == true) { /* キーが押された */
+        ppianokey->start = millis();
+        ppianokey->seqID = STEP01;
+      } else if ((ppianokey->upper == false) &&
+                 (ppianokey->lower == false)) { /* 押してない状態を継続 */
+      } else if ((ppianokey->upper == false) && (ppianokey->lower == true)) {
         /* 上側が反応せずに下側だけ反応する異常状態もしくはノイズ */
       }
       break;
     case STEP01: /* キーを途中まで押した */
-      if ((pkey->upper == false) && (pkey->lower == false)) {
-        pkey->seqID = STEP00; /* 最後まで押されずに途中でリリース */
-      } else if ((pkey->upper == false) && (pkey->lower == true)) {
+      if ((ppianokey->upper == false) && (ppianokey->lower == false)) {
+        ppianokey->seqID = STEP00; /* 最後まで押されずに途中でリリース */
+      } else if ((ppianokey->upper == false) && (ppianokey->lower == true)) {
         /* 上側が反応せずに下側だけ反応する異常状態もしくはノイズ */
-      } else if ((pkey->upper == true) &&
-                 (pkey->lower == false)) { /* 途中まで押した状態を継続 */
-      } else if ((pkey->upper == true) &&
-                 (pkey->lower == true)) { /* 最後までキーを押した */
-        pkey->end   = millis();
-        pkey->seqID = STEP02;
+      } else if ((ppianokey->upper == true) &&
+                 (ppianokey->lower == false)) { /* 途中まで押した状態を継続 */
+      } else if ((ppianokey->upper == true) &&
+                 (ppianokey->lower == true)) { /* 最後までキーを押した */
+        ppianokey->end   = millis();
+        ppianokey->seqID = STEP02;
       }
       break;
     case STEP02: /* 最後までキーを押した */
-      if ((pkey->upper == false) &&
-          (pkey->lower == false)) { /* 最後まで押した後にリリース */
-        pkey->volume = 0.0;
-        pkey->seqID  = STEP00;
-      } else if ((pkey->upper == false) && (pkey->lower == true)) {
+      if ((ppianokey->upper == false) &&
+          (ppianokey->lower == false)) { /* 最後まで押した後にリリース */
+        ppianokey->volume = 0.0;
+        ppianokey->seqID  = STEP00;
+      } else if ((ppianokey->upper == false) && (ppianokey->lower == true)) {
         /* 上側が反応せずに下側だけ反応する異常状態もしくはノイズ */
-      } else if ((pkey->upper == true) && (pkey->lower == false)) {
-        pkey->volume = 0.0;
-        pkey->seqID  = STEP01; /* 途中まで押した状態に戻る */
-      } else if ((pkey->upper == true) &&
-                 (pkey->lower == true)) { /* 最後まで押した状態を維持*/
-        pkey->volume = 1.0 / (1.0 + (float)pkey->end - (float)pkey->start);
+      } else if ((ppianokey->upper == true) && (ppianokey->lower == false)) {
+        ppianokey->volume = 0.0;
+        ppianokey->seqID  = STEP01; /* 途中まで押した状態に戻る */
+      } else if ((ppianokey->upper == true) &&
+                 (ppianokey->lower == true)) { /* 最後まで押した状態を維持*/
+        ppianokey->volume = 1.0 / (1.0 + (float)ppianokey->end - (float)ppianokey->start);
       }
       break;
     case STEP03:

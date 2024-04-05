@@ -31,7 +31,7 @@ uint8_t soundBuffer[BUFFER_LEN];  // DMA転送バッファ
 #define MY_I2S_COMM_FORMAT I2S_COMM_FORMAT_I2S_MSB
 #endif
 
-void dac::output(pianoKey *pkey) {
+void Dac::output(PianoKey *ppianokey) {
   size_t   transBytes;
   uint32_t waveNum;
   float    freqRatio, phase, sig, soundBufferCal[RESOLUTION];
@@ -47,12 +47,12 @@ void dac::output(pianoKey *pkey) {
   // synthesize waves accroding to the pushed keyboard
   for (uint32_t multiplx = 0; multiplx < MULTIPLEX_NUM; multiplx++) {
     for (uint32_t multiplxCH = 0; multiplxCH < MULTIPLEX_CH_NUM; multiplxCH++) {
-      if (pkey->key[multiplx][multiplxCH].volume > 0) {
+      if (ppianokey->key[multiplx][multiplxCH].volume > 0) {
         // To keep the same loudness, devide the synthesized wave by the number of synthesized wave
         waveNum++;
         for (uint32_t i = 0; i < RESOLUTION; i++) {
           // freqRatio become 1 when at 78.125Hz
-          freqRatio = pkey->key[multiplx][multiplxCH].freq / NORMFREQ;
+          freqRatio = ppianokey->key[multiplx][multiplxCH].freq / NORMFREQ;
           // pahse from 0 to 2PI
           phase = 2.0 * PI * (float)i / (float)RESOLUTION;
           sig   = sin(freqRatio * phase);
@@ -86,7 +86,7 @@ void dac::output(pianoKey *pkey) {
             portMAX_DELAY);
 }
 
-void dac::init(pianoKey *pkey) {
+void Dac::init(PianoKey *ppianokey) {
   i2s_config_t i2s_config = {
       .mode =
           (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN),

@@ -30,18 +30,20 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
 
   for (uint32_t multiplx = 0; multiplx < MULTIPLEX_NUM; multiplx++) {
     for (uint32_t multiplxCH = 0; multiplxCH < MULTIPLEX_CH_NUM; multiplxCH++) {
-      if (ppianokey->key[multiplx][multiplxCH].volume > 0) {
-        // To keep the same loudness, devide the result by the number of synthesized wave
-        waveNum++;
-        // theta = 2PI * f * t
-        // 0 < index < TABLE_NUM corresponds to 0 < theta < 2PI
-        // sin_table(index) -> sin_table(TABLE_NUM * theta / 2PI)
-        // sin(theta) = sin_table(index) = sin_table(TABLE_NUM * f * t)
-        index = (uint32_t)((float)SIN_TABLE_NUM * ppianokey->key[multiplx][multiplxCH].freq * time);
-        // calculate remainder by multiplexing index with TABLE_NUM
-        index = (SIN_TABLE_NUM - 1) & index;
-        result += sin_table[index];
-        result /= sqrt_table[waveNum];
+      if(ppianokey->key[multiplx][multiplxCH].freq > 0) {
+        if (ppianokey->key[multiplx][multiplxCH].volume > 0) {
+          // To keep the same loudness, devide the result by the number of synthesized wave
+          waveNum++;
+          // theta = 2PI * f * t
+          // 0 < index < TABLE_NUM corresponds to 0 < theta < 2PI
+          // sin_table(index) -> sin_table(TABLE_NUM * theta / 2PI)
+          // sin(theta) = sin_table(index) = sin_table(TABLE_NUM * f * t)
+          index = (uint32_t)((float)SIN_TABLE_NUM * ppianokey->key[multiplx][multiplxCH].freq * time);
+          // calculate remainder by multiplexing index with TABLE_NUM
+          index = (SIN_TABLE_NUM - 1) & index;
+          result += sin_table[index];
+          result /= sqrt_table[waveNum];
+        }
       }
     }
   }

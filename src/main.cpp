@@ -1,12 +1,12 @@
 #include <Arduino.h>
 
-#include "multiplex.h"
 #include "PianoKey.h"
+#include "multiplex.h"
 #include "pwm.h"
 #include "util.h"
 
 hw_timer_t                *timer = NULL;
-volatile SemaphoreHandle_t timerSemAppCPU, timerSemProCPU;
+volatile SemaphoreHandle_t timerSemProCPU;
 portMUX_TYPE               timerMux   = portMUX_INITIALIZER_UNLOCKED;
 volatile uint32_t          isrCounter = 0;
 volatile uint32_t          lastIsrAt  = 0;
@@ -22,33 +22,23 @@ void IRAM_ATTR onTimer() {
   lastIsrAt = millis();
   portEXIT_CRITICAL_ISR(&timerMux);
   // Give a semaphore that we can check in the loop
-  xSemaphoreGiveFromISR(timerSemAppCPU, NULL);
   xSemaphoreGiveFromISR(timerSemProCPU, NULL);
-  // It is safe to use digitalRead/Write here if you want to toggle an output
 }
 
 void taskOnAppCPU(void *pvParameters) {
-  static uint32_t isrCountPast;
-  static uint32_t multiplxCH;
-
   while (1) {
-    if (xSemaphoreTake(timerSemAppCPU, 0) == pdTRUE) {
-      // キーボードの状態を更新しボリュームを取得する
-      for (int i = 0; i < MULTIPLEX_NUM; i++) pianokey.process(i, multiplxCH);
-      // マルチプレクサに出力するセレクト信号
-      if (++multiplxCH > MULTIPLEX_CH_NUM - 1) multiplxCH = 0;
-      multiplex.output(multiplxCH);
-    }
+    // No less than delay(1) is needed for the ProCPU to run
+    // Don't know why but ProCPU stop running without delay(1) here.
     delay(1);
   }
 }
 
 void taskOnProCPU(void *pvParameters) {
-  uint32_t        isrCount, isrTime, diffIsrCount;
-  static uint32_t isrCountPast;
-
   while (1) {
     if (xSemaphoreTake(timerSemProCPU, 0) == pdTRUE) {
+      uint32_t        isrCount, isrTime, diffIsrCount;
+      static uint32_t isrCountPast;
+
       portENTER_CRITICAL(&timerMux);
       isrCount = isrCounter;
       isrTime  = lastIsrAt;
@@ -56,11 +46,20 @@ void taskOnProCPU(void *pvParameters) {
 
       diffIsrCount = isrCount - isrCountPast;
       isrCountPast = isrCount;
+
+      static uint32_t multiplx;
+      static uint32_t multiplxCH;
+
+      if (++multiplx > MULTIPLEX_NUM - 1) {
+        multiplx = 0;
+        if (++multiplxCH > MULTIPLEX_CH_NUM - 1) multiplxCH = 0;
+        multiplex.output(multiplxCH);
+      }
+      pianokey.process(multiplx, multiplxCH);
       pwm.output(isrCount, &pianokey);
-      // If heavy process were included, this function would be less activated.
-      // diffIsrCount should be 1 if the process is light enough. 1 is the desired.
-      // The number greater than 1 means miss activation due to heavy process or interruption done by OS.
-      // Serial.printf("%d\n",diffIsrCount);
+
+      static uint32_t index;
+      if ((++index % 100000) == 0) Serial.printf("%d\n", diffIsrCount);
     }
   }
 }
@@ -74,7 +73,6 @@ void setup() {
   pwm.init();
 
   // Create semaphore to inform us when the timer has fired
-  timerSemAppCPU = xSemaphoreCreateBinary();
   timerSemProCPU = xSemaphoreCreateBinary();
   // Use 1st timer of 4 (counted from zero).
   // Clock count at 40MHz(=80MHz/2). By the prescaler 2 which must be in the range from 2 to 655535
@@ -111,6 +109,5 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   delay(1);
 }

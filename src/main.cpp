@@ -89,7 +89,7 @@ void setup() {
 
   xTaskCreateUniversal(
       taskOnAppCPU,
-      "taskOnProCPU",
+      "taskOnAppCPU",
       8192,
       NULL,
       configMAX_PRIORITIES - 1,  // 最高優先度
@@ -99,7 +99,7 @@ void setup() {
 
   xTaskCreateUniversal(
       taskOnProCPU,
-      "taskOnAppCPU",
+      "taskOnProCPU",
       8192,
       NULL,
       configMAX_PRIORITIES - 1,  // 最高優先度

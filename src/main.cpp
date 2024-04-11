@@ -1,9 +1,11 @@
+#include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 
 #include "PianoKey.h"
 #include "multiplex.h"
 #include "pwm.h"
 #include "util.h"
+
 
 hw_timer_t                *timer = NULL;
 volatile SemaphoreHandle_t timerSemProCPU;

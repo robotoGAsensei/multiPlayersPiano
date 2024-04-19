@@ -14,7 +14,6 @@
 #include "square_table.h"
 #include "triangle_table.h"
 
-
 const uint32_t PWMOUTPIN     = 26;
 const uint32_t PWMCH         = 0;
 const uint32_t PWMMAX        = 1023;
@@ -49,79 +48,38 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
           // calculate remainder by multiplexing index with TABLE_NUM
           index = (SIN_TABLE_NUM - 1) & index;
 
-          const uint32_t  pressCounts = 5000;
           static seqID_t  stt_seqID   = STEP00;
-          static uint32_t count       = 0;
+          float           trigger;
+
+          trigger = ppianokey->key[6][13].volume;
           switch (stt_seqID) {
             case STEP00:
               result += sin_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP01;
-                }
-              } else
-                count = 0;
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP01;
               break;
             case STEP01:
-              result += pseudo_triangle_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP02;
-                }
-              } else
-                count = 0;
+              result += saw_tooth_table[index];
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP02;
               break;
             case STEP02:
               result += pwm12p5_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP03;
-                }
-              } else
-                count = 0;
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP03;
               break;
             case STEP03:
               result += pwm25_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP04;
-                }
-              } else
-                count = 0;
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP04;
               break;
             case STEP04:
-              result += saw_tooth_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP05;
-                }
-              } else
-                count = 0;
+              result += square_table[index];
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP05;
               break;
             case STEP05:
-              result += square_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP06;
-                }
-              } else
-                count = 0;
+              result += pseudo_triangle_table[index];
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP06;
               break;
             case STEP06:
               result += triangle_table[index];
-              if (ppianokey->key[6][13].volume > 0) {
-                if (++count > pressCounts) {
-                  count     = 0;
-                  stt_seqID = STEP00;
-                }
-              } else
-                count = 0;
+              if (buttonONOFF(trigger) == true) stt_seqID = STEP00;
               break;
           }
           result /= sqrt_table[waveNum];
@@ -133,6 +91,38 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
   ledcWrite(PWMCH, result_digit);
 
   // Serial.printf("%d %d %d %f\n", result_digit, time_count, waveNum, result);
+}
+
+uint32_t Pwm::buttonONOFF(float trigger) {
+  static seqID_t  stt_seqID   = STEP00;
+  const uint32_t  pressCounts = 10;
+  static uint32_t count       = 0;
+  uint32_t        ret         = 0;
+
+  switch (stt_seqID) {
+    case STEP00:
+      if (trigger > 0) {
+        if (++count > pressCounts) {
+          count     = 0;
+          stt_seqID = STEP01;
+        }
+      } else {
+        count = 0;
+      }
+      break;
+    case STEP01:
+      if (trigger < 1) {
+        if (++count > pressCounts) {
+          count     = 0;
+          ret       = true;
+          stt_seqID = STEP00;
+        }
+      } else {
+        count = 0;
+      }
+      break;
+  }
+  return (ret);
 }
 
 void Pwm::init(void) {

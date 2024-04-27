@@ -6,7 +6,6 @@
 #include "pwm.h"
 #include "util.h"
 
-
 hw_timer_t                *timer = NULL;
 volatile SemaphoreHandle_t timerSemProCPU;
 portMUX_TYPE               timerMux   = portMUX_INITIALIZER_UNLOCKED;
@@ -16,6 +15,10 @@ volatile uint32_t          lastIsrAt  = 0;
 PianoKey  pianokey;
 Multiplex multiplex;
 Pwm       pwm;
+
+const uint32_t    numNeoPix  = 3;
+const uint32_t    portNeoPix = 25;
+Adafruit_NeoPixel strip      = Adafruit_NeoPixel(numNeoPix, portNeoPix, NEO_GRB + NEO_KHZ800);
 
 void IRAM_ATTR onTimer() {
   // Increment the counter and set the time of ISR
@@ -29,9 +32,35 @@ void IRAM_ATTR onTimer() {
 
 void taskOnAppCPU(void *pvParameters) {
   while (1) {
+    const float SAMPLING_RFEQ = (float)TASK_FREQ;  // 100[kHz]
+    uint32_t    isrCount, isrTime, time_count;
+    float       time;
+
+    portENTER_CRITICAL(&timerMux);
+    isrCount = isrCounter;
+    isrTime  = lastIsrAt;
+    portEXIT_CRITICAL(&timerMux);
+
+    time_count = 0xfffff & isrTime;
+    time       = (float)time_count / SAMPLING_RFEQ;
+
+    // Turn on LEDs one by one
+
+    for (int i = 0; i < numNeoPix; i++) {
+      strip.setPixelColor(i, 100, 45, 0);  // Set the color of the i-th LED to red
+      strip.show();                        // Update the LED strip with the new colors
+      delay(100);                          // Wait for 100 milliseconds
+    }
+
+    // Turn off LEDs one by one
+    for (int i = 0; i < numNeoPix; i++) {
+      strip.setPixelColor(i, 0, 0, 0);  // Set the color of the i-th LED to black (turn it off)
+      strip.show();                     // Update the LED strip with the new colors
+      delay(100);                       // Wait for 100 milliseconds
+    }
     // No less than delay(1) is needed for the ProCPU to run
     // Don't know why but ProCPU stop running without delay(1) here.
-    delay(1);
+    // delay(1);
   }
 }
 
@@ -73,6 +102,8 @@ void setup() {
   pianokey.init();
   multiplex.init();
   pwm.init();
+  strip.begin();
+  strip.show();
 
   // Create semaphore to inform us when the timer has fired
   timerSemProCPU = xSemaphoreCreateBinary();

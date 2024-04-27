@@ -17,7 +17,7 @@
 const uint32_t PWMOUTPIN     = 26;
 const uint32_t PWMCH         = 0;
 const uint32_t PWMMAX        = 1023;
-const float    SAMPLING_RFEQ = 100000.0f;  // 100[kHz]
+const float    SAMPLING_RFEQ = (float)TASK_FREQ;  // 100[kHz]
 
 void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
   uint32_t waveNum = 0;

@@ -48,38 +48,38 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
           // calculate remainder by multiplexing index with TABLE_NUM
           index = (SIN_TABLE_NUM - 1) & index;
 
-          static seqID_t  stt_seqID   = STEP00;
+          static seqID_t  stt_seqID   = SIN_WAVE;
           float           trigger;
 
           trigger = ppianokey->key[6][13].volume;
           switch (stt_seqID) {
-            case STEP00:
+            case SIN_WAVE:
               result += sin_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP01;
+              if (buttonONOFF(trigger) == true) stt_seqID = SAW_TOOTH;
               break;
-            case STEP01:
+            case SAW_TOOTH:
               result += saw_tooth_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP02;
+              if (buttonONOFF(trigger) == true) stt_seqID = PWM12P5;
               break;
-            case STEP02:
+            case PWM12P5:
               result += pwm12p5_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP03;
+              if (buttonONOFF(trigger) == true) stt_seqID = PWM25;
               break;
-            case STEP03:
+            case PWM25:
               result += pwm25_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP04;
+              if (buttonONOFF(trigger) == true) stt_seqID =SQUARE;
               break;
-            case STEP04:
+            case SQUARE:
               result += square_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP05;
+              if (buttonONOFF(trigger) == true) stt_seqID = PSEUDO_TRIANGLE;
               break;
-            case STEP05:
+            case PSEUDO_TRIANGLE:
               result += pseudo_triangle_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP06;
+              if (buttonONOFF(trigger) == true) stt_seqID = TRIANGLE;
               break;
-            case STEP06:
+            case TRIANGLE:
               result += triangle_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = STEP00;
+              if (buttonONOFF(trigger) == true) stt_seqID = SIN_WAVE;
               break;
           }
           result /= sqrt_table[waveNum];

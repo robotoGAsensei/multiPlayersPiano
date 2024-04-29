@@ -16,7 +16,7 @@ PianoKey  pianokey;
 Multiplex multiplex;
 Pwm       pwm;
 
-const uint32_t    numNeoPix  = 3;
+const uint32_t    numNeoPix  = 36;
 const uint32_t    portNeoPix = 25;
 Adafruit_NeoPixel strip      = Adafruit_NeoPixel(numNeoPix, portNeoPix, NEO_GRB + NEO_KHZ800);
 
@@ -47,7 +47,7 @@ void taskOnAppCPU(void *pvParameters) {
     // Turn on LEDs one by one
 
     for (int i = 0; i < numNeoPix; i++) {
-      strip.setPixelColor(i, 100, 45, 0);  // Set the color of the i-th LED to red
+      strip.setPixelColor(i, 0, 0, 50);  // Set the color of the i-th LED to red
       strip.show();                        // Update the LED strip with the new colors
       delay(100);                          // Wait for 100 milliseconds
     }

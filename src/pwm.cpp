@@ -48,38 +48,35 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
           // calculate remainder by multiplexing index with TABLE_NUM
           index = (SIN_TABLE_NUM - 1) & index;
 
-          static seqID_t  stt_seqID   = SIN_WAVE;
-          float           trigger;
-
-          trigger = ppianokey->key[6][13].volume;
-          switch (stt_seqID) {
+          float trigger = ppianokey->key[6][13].volume;
+          switch (stt_waveID) {
             case SIN_WAVE:
               result += sin_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = SAW_TOOTH;
+              if (buttonONOFF(trigger) == true) stt_waveID = SAW_TOOTH;
               break;
             case SAW_TOOTH:
               result += saw_tooth_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = PWM12P5;
+              if (buttonONOFF(trigger) == true) stt_waveID = PWM12P5;
               break;
             case PWM12P5:
               result += pwm12p5_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = PWM25;
+              if (buttonONOFF(trigger) == true) stt_waveID = PWM25;
               break;
             case PWM25:
               result += pwm25_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID =SQUARE;
+              if (buttonONOFF(trigger) == true) stt_waveID =SQUARE;
               break;
             case SQUARE:
               result += square_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = PSEUDO_TRIANGLE;
+              if (buttonONOFF(trigger) == true) stt_waveID = PSEUDO_TRIANGLE;
               break;
             case PSEUDO_TRIANGLE:
               result += pseudo_triangle_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = TRIANGLE;
+              if (buttonONOFF(trigger) == true) stt_waveID = TRIANGLE;
               break;
             case TRIANGLE:
               result += triangle_table[index];
-              if (buttonONOFF(trigger) == true) stt_seqID = SIN_WAVE;
+              if (buttonONOFF(trigger) == true) stt_waveID = SIN_WAVE;
               break;
           }
           result /= sqrt_table[waveNum];
@@ -130,4 +127,6 @@ void Pwm::init(void) {
   ledcSetup(PWMCH, 78125, 10);  // 78.125kHz, 10Bit(1024 resolution)
   ledcAttachPin(PWMOUTPIN, PWMCH);
   ledcWrite(PWMCH, PWMMAX / 2);  //  50%(1.7V)
+
+  stt_waveID = SIN_WAVE;
 }

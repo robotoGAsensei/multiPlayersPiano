@@ -7,6 +7,8 @@
 #define PRESCALE        (2)
 #define PRESCALED_CLOCK (BASE_CLOCK / PRESCALE)
 #define TASK_FREQ       (100000)  // 100kHz 10us
+#define USER_PI         (3.1415926535)
+#define USER_2PI        (6.2831853071)
 
 typedef enum {
   STEP00 = 0U,

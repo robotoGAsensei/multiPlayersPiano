@@ -48,35 +48,27 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
           // calculate remainder by multiplexing index with TABLE_NUM
           index = (SIN_TABLE_NUM - 1) & index;
 
-          float trigger = ppianokey->key[6][13].volume;
           switch (stt_waveID) {
             case SIN_WAVE:
               result += sin_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID = SAW_TOOTH;
               break;
             case SAW_TOOTH:
               result += saw_tooth_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID = PWM12P5;
               break;
             case PWM12P5:
               result += pwm12p5_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID = PWM25;
               break;
             case PWM25:
               result += pwm25_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID =SQUARE;
               break;
             case SQUARE:
               result += square_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID = PSEUDO_TRIANGLE;
               break;
             case PSEUDO_TRIANGLE:
               result += pseudo_triangle_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID = TRIANGLE;
               break;
             case TRIANGLE:
               result += triangle_table[index];
-              if (buttonONOFF(trigger) == true) stt_waveID = SIN_WAVE;
               break;
           }
           result /= sqrt_table[waveNum];
@@ -86,8 +78,38 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
   }
   result_digit = (uint32_t)((float)PWMMAX * (1.0f + result) / 2.0f);
   ledcWrite(PWMCH, result_digit);
+}
 
-  // Serial.printf("%d %d %d %f\n", result_digit, time_count, waveNum, result);
+void Pwm::waveSwitch(PianoKey *ppianokey) {
+  float trigger = ppianokey->key[6][13].volume;
+
+  switch (stt_waveID) {
+    case SIN_WAVE:
+      if (buttonONOFF(trigger) == true) stt_waveID = SAW_TOOTH;
+      break;
+    case SAW_TOOTH:
+      if (buttonONOFF(trigger) == true) stt_waveID = PWM12P5;
+      break;
+    case PWM12P5:
+      if (buttonONOFF(trigger) == true) stt_waveID = PWM25;
+      break;
+    case PWM25:
+      if (buttonONOFF(trigger) == true) stt_waveID = SQUARE;
+      break;
+    case SQUARE:
+      if (buttonONOFF(trigger) == true) stt_waveID = PSEUDO_TRIANGLE;
+      break;
+    case PSEUDO_TRIANGLE:
+      if (buttonONOFF(trigger) == true) stt_waveID = TRIANGLE;
+      break;
+    case TRIANGLE:
+      if (buttonONOFF(trigger) == true) stt_waveID = SIN_WAVE;
+      break;
+  }
+
+  // static uint32_t indexPrint;
+  // if ((++indexPrint % 10000) == 0) Serial.printf("%f %d\n", trigger, stt_waveID);
+
 }
 
 uint32_t Pwm::buttonONOFF(float trigger) {

@@ -13,13 +13,14 @@
 #include "sqrt_table.h"
 #include "square_table.h"
 #include "triangle_table.h"
+#include "wave.h"
 
 const uint32_t PWMOUTPIN     = 26;
 const uint32_t PWMCH         = 0;
 const uint32_t PWMMAX        = 1023;
 const float    SAMPLING_RFEQ = (float)TASK_FREQ;  // 100[kHz]
 
-void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
+void Pwm::output(uint32_t time_count, PianoKey *ppianokey, seqID_t stt_waveID) {
   uint32_t waveNum = 0;
   float    result  = 0.0f;
 
@@ -80,75 +81,9 @@ void Pwm::output(uint32_t time_count, PianoKey *ppianokey) {
   ledcWrite(PWMCH, result_digit);
 }
 
-void Pwm::waveSwitch(PianoKey *ppianokey) {
-  float trigger = ppianokey->key[6][13].volume;
-
-  switch (stt_waveID) {
-    case SIN_WAVE:
-      if (buttonONOFF(trigger) == true) stt_waveID = SAW_TOOTH;
-      break;
-    case SAW_TOOTH:
-      if (buttonONOFF(trigger) == true) stt_waveID = PWM12P5;
-      break;
-    case PWM12P5:
-      if (buttonONOFF(trigger) == true) stt_waveID = PWM25;
-      break;
-    case PWM25:
-      if (buttonONOFF(trigger) == true) stt_waveID = SQUARE;
-      break;
-    case SQUARE:
-      if (buttonONOFF(trigger) == true) stt_waveID = PSEUDO_TRIANGLE;
-      break;
-    case PSEUDO_TRIANGLE:
-      if (buttonONOFF(trigger) == true) stt_waveID = TRIANGLE;
-      break;
-    case TRIANGLE:
-      if (buttonONOFF(trigger) == true) stt_waveID = SIN_WAVE;
-      break;
-  }
-
-  // static uint32_t indexPrint;
-  // if ((++indexPrint % 10000) == 0) Serial.printf("%f %d\n", trigger, stt_waveID);
-
-}
-
-uint32_t Pwm::buttonONOFF(float trigger) {
-  static seqID_t  stt_seqID   = STEP00;
-  const uint32_t  pressCounts = 10;
-  static uint32_t count       = 0;
-  uint32_t        ret         = 0;
-
-  switch (stt_seqID) {
-    case STEP00:
-      if (trigger > 0) {
-        if (++count > pressCounts) {
-          count     = 0;
-          stt_seqID = STEP01;
-        }
-      } else {
-        count = 0;
-      }
-      break;
-    case STEP01:
-      if (trigger < 1) {
-        if (++count > pressCounts) {
-          count     = 0;
-          ret       = true;
-          stt_seqID = STEP00;
-        }
-      } else {
-        count = 0;
-      }
-      break;
-  }
-  return (ret);
-}
-
 void Pwm::init(void) {
   pinMode(PWMOUTPIN, OUTPUT);
   ledcSetup(PWMCH, 78125, 10);  // 78.125kHz, 10Bit(1024 resolution)
   ledcAttachPin(PWMOUTPIN, PWMCH);
   ledcWrite(PWMCH, PWMMAX / 2);  //  50%(1.7V)
-
-  stt_waveID = SIN_WAVE;
 }

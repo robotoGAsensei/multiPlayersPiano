@@ -13,7 +13,6 @@
 #include "sqrt_table.h"
 #include "square_table.h"
 #include "triangle_table.h"
-#include "wave.h"
 
 const uint32_t PWMOUTPIN     = 26;
 const uint32_t PWMCH         = 0;

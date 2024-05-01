@@ -40,7 +40,7 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
   float freq;
 
   switch (stt_waveID) {
-    case SIN_WAVE:  // 3rd 5*LED =  9, 10, 11, 12, 13
+    case SIN_WAVE:  // SIN panel wired at 3rd 5*LED =  9, 10, 11, 12, 13
       freq = 0.5f;
       strip.setPixelColor(9, 0, 0, calcNeopix(freq, isrTime, 1.2f));
       strip.setPixelColor(10, 0, 0, calcNeopix(freq, isrTime, 0.9f));
@@ -48,7 +48,7 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
       strip.setPixelColor(12, 0, 0, calcNeopix(freq, isrTime, 0.3f));
       strip.setPixelColor(13, 0, 0, calcNeopix(freq, isrTime, 0.0f));
       break;
-    case SAW_TOOTH:  // 2nd 5*LED =  4,  5,  6,  7,  8
+    case SAW_TOOTH:  // SAW TOOTH panel wired at 2nd 5*LED =  4,  5,  6,  7,  8
       freq = 0.5f;
       strip.setPixelColor(4, 0, 0, calcNeopix(freq, isrTime, 1.2f));
       strip.setPixelColor(5, 0, 0, calcNeopix(freq, isrTime, 0.9f));
@@ -56,14 +56,14 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
       strip.setPixelColor(7, 0, 0, calcNeopix(freq, isrTime, 0.3f));
       strip.setPixelColor(8, 0, 0, calcNeopix(freq, isrTime, 0.0f));
       break;
-    case PWM12P5:  // 1st 4*LED =  0,  1,  2,  3
+    case PWM12P5:  // PWM12p5 panel wired at 1st 4*LED =  0,  1,  2,  3
       freq = 0.5f;
       strip.setPixelColor(0, 0, 0, calcNeopix(freq, isrTime, 0.9f));
       strip.setPixelColor(1, 0, 0, calcNeopix(freq, isrTime, 0.6f));
       strip.setPixelColor(2, 0, 0, calcNeopix(freq, isrTime, 0.3f));
       strip.setPixelColor(3, 0, 0, calcNeopix(freq, isrTime, 0.0f));
       break;
-    case PWM25:  // 7th 6*LED = 30, 31, 32, 33, 34, 35
+    case PWM25:  // PWM25 panel wired at 7th 6*LED = 30, 31, 32, 33, 34, 35
       freq = 0.5f;
       strip.setPixelColor(30, 0, 0, calcNeopix(freq, isrTime, 1.5f));
       strip.setPixelColor(31, 0, 0, calcNeopix(freq, isrTime, 1.2f));
@@ -72,7 +72,7 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
       strip.setPixelColor(34, 0, 0, calcNeopix(freq, isrTime, 0.3f));
       strip.setPixelColor(35, 0, 0, calcNeopix(freq, isrTime, 0.0f));
       break;
-    case SQUARE:  // 6th 6*LED = 24, 25, 26, 27, 28, 29
+    case SQUARE:  // SQUARE panel wired at 6th 6*LED = 24, 25, 26, 27, 28, 29
       freq = 0.5f;
       strip.setPixelColor(24, 0, 0, calcNeopix(freq, isrTime, 1.5f));
       strip.setPixelColor(25, 0, 0, calcNeopix(freq, isrTime, 1.2f));
@@ -81,7 +81,7 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
       strip.setPixelColor(28, 0, 0, calcNeopix(freq, isrTime, 0.3f));
       strip.setPixelColor(29, 0, 0, calcNeopix(freq, isrTime, 0.0f));
       break;
-    case PSEUDO_TRIANGLE:  // 5th 5*LED = 19, 20, 21, 22, 23
+    case PSEUDO_TRIANGLE:  // PSEUDE TRIANGLE panel wired at 5th 5*LED = 19, 20, 21, 22, 23
       freq = 0.5f;
       strip.setPixelColor(19, 0, 0, calcNeopix(freq, isrTime, 1.2f));
       strip.setPixelColor(20, 0, 0, calcNeopix(freq, isrTime, 0.9f));
@@ -89,7 +89,7 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
       strip.setPixelColor(22, 0, 0, calcNeopix(freq, isrTime, 0.3f));
       strip.setPixelColor(23, 0, 0, calcNeopix(freq, isrTime, 0.0f));
       break;
-    case TRIANGLE:  // 4th 5*LED = 14, 15, 16, 17, 18
+    case TRIANGLE:  // TRIANGLE panel wired at 4th 5*LED = 14, 15, 16, 17, 18
       freq = 0.5f;
       strip.setPixelColor(14, 0, 0, calcNeopix(freq, isrTime, 1.2f));
       strip.setPixelColor(15, 0, 0, calcNeopix(freq, isrTime, 0.9f));
@@ -101,30 +101,56 @@ void Wave::lightPatternSwitch(uint32_t isrTime) {
   strip.show();  // Update the LED strip with the new colors
 }
 
+void Wave::turnOffLED(void) {
+  for (uint32_t i = 0; i < numNeoPix; i++) strip.setPixelColor(i, 0, 0, 0);
+  strip.show();
+}
+
 void Wave::soundSwitch(PianoKey *ppianokey) {
   float trigger = ppianokey->key[6][13].volume;
 
   switch (stt_waveID) {
     case SIN_WAVE:
-      if (buttonONOFF(trigger) == true) stt_waveID = TRIANGLE;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = TRIANGLE;
+        turnOffLED();
+      }
       break;
     case SAW_TOOTH:
-      if (buttonONOFF(trigger) == true) stt_waveID = SIN_WAVE;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = SIN_WAVE;
+        turnOffLED();
+      }
       break;
     case PWM12P5:
-      if (buttonONOFF(trigger) == true) stt_waveID = SAW_TOOTH;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = SAW_TOOTH;
+        turnOffLED();
+      }
       break;
     case PWM25:
-      if (buttonONOFF(trigger) == true) stt_waveID = PWM12P5;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = PWM12P5;
+        turnOffLED();
+      }
       break;
     case SQUARE:
-      if (buttonONOFF(trigger) == true) stt_waveID = PWM25;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = PWM25;
+        turnOffLED();
+      }
       break;
     case PSEUDO_TRIANGLE:
-      if (buttonONOFF(trigger) == true) stt_waveID = SQUARE;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = SQUARE;
+        turnOffLED();
+      }
       break;
     case TRIANGLE:
-      if (buttonONOFF(trigger) == true) stt_waveID = PSEUDO_TRIANGLE;
+      if (buttonONOFF(trigger) == true) {
+        stt_waveID = PSEUDO_TRIANGLE;
+        turnOffLED();
+      }
       break;
   }
 

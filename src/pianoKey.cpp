@@ -1,6 +1,6 @@
 #include "pianoKey.h"
 
-#include <esp32-hal.h>  // C:\Users\nb1e4\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.14\cores\esp32
+#include <esp32-hal.h>
 #include <stdio.h>
 
 const uint32_t upperDIN[MULTIPLEX_NUM] = {36, 34, 32, 27, 12, 15, 16};

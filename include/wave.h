@@ -18,6 +18,7 @@ class Wave {
  private:
   uint32_t buttonONOFF(float trigger);
   uint32_t calcNeopix(float freqNeopix, uint32_t isrTime, float phaseDiff);
+  void turnOffLED(void);
 };
 
 #endif /* WAVE_H */

@@ -3,7 +3,6 @@
 #include "PianoKey.h"
 #include "multiplex.h"
 #include "pwm.h"
-#include "sin_table.h"
 #include "util.h"
 #include "wave.h"
 

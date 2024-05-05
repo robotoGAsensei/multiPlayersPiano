@@ -23,6 +23,7 @@ class PianoKey {
     uint32_t end;
     uint32_t upper;
     uint32_t lower;
+    uint32_t count;
     float    volume;
     float    freq;
   } key_st;

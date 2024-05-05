@@ -61,10 +61,16 @@ void PianoKey::polling(uint32_t multiplx, uint32_t multiplxCH) {
 void PianoKey::stateLower(uint32_t multiplx, uint32_t multiplxCH) {
   key_st *ppianokey = &key[multiplx][multiplxCH];
 
-  if (ppianokey->lower == true)
+  if (ppianokey->lower == true) {
     ppianokey->volume = 1.0;
-  else
-    ppianokey->volume = 0.0;
+    ppianokey->count = 0;
+  }
+  else {
+    if(++ppianokey->count > 50) {
+      ppianokey->count = 0;
+      ppianokey->volume = 0.0;
+    }
+  }
 }
 
 void PianoKey::state(uint32_t multiplx, uint32_t multiplxCH) {

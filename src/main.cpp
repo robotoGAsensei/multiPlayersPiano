@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <Midi.h>
+#include <SPIFFS.h>
 
 #include "PianoKey.h"
 #include "multiplex.h"
@@ -16,6 +18,29 @@ PianoKey  pianokey;
 Multiplex multiplex;
 Pwm       pwm;
 Wave      wave;
+
+File midifile;
+
+void readFile() {
+  String file_name = "/airship.mid";  // ファイル名の指定
+  char   c;
+
+  if (SPIFFS.exists(file_name)) {                   // ファイルが存在すれば
+    File file = SPIFFS.open(file_name, FILE_READ);  // ファイルを開く
+
+    c = file.read();           // ファイルから1バイトずつデータを読み取り
+    Serial.printf("%c", c);    // 液晶へ表示
+    c = file.read();           // ファイルから1バイトずつデータを読み取り
+    Serial.printf("%c", c);    // 液晶へ表示
+    c = file.read();           // ファイルから1バイトずつデータを読み取り
+    Serial.printf("%c", c);    // 液晶へ表示
+    c = file.read();           // ファイルから1バイトずつデータを読み取り
+    Serial.printf("%c\n", c);  // 液晶へ表示
+    file.close();              // ファイルを閉じる
+  } else {
+    Serial.printf("no file\n");
+  }
+}
 
 void IRAM_ATTR onTimer() {
   // Increment the counter and set the time of ISR
@@ -37,10 +62,10 @@ void taskOnAppCPU(void *pvParameters) {
     portEXIT_CRITICAL(&timerMux);
 
     wave.lightPatternSwitch(isrTime);
-
+    readFile();
     // No less than delay(1) is needed for the ProCPU to run
     // Don't know why but ProCPU stop running without delay(1) here.
-    delay(1);
+    delay(100);
   }
 }
 
@@ -70,10 +95,25 @@ void taskOnProCPU(void *pvParameters) {
       pwm.output(isrCount, &pianokey, wave.stt_waveID);
       wave.soundSwitch(&pianokey);
 
-      // static uint32_t index;
-      // if ((++index % 100000) == 0) Serial.printf("%d %d\n", diffIsrCount, pwm.stt_waveID);
+      static uint32_t index;
+      if ((++index % 100000) == 0) Serial.printf("%d\n", diffIsrCount);
     }
   }
+}
+
+void spiffsInfo() {
+  SPIFFS.begin();
+  File file = SPIFFS.open("/");  // ルートディレクトリを開く
+
+  while (true) {
+    File entry = file.openNextFile();  // ファイルを1つづつ開く
+    if (!entry) {                      // ディレクトリの末尾に達したら終了
+      break;
+    }
+    Serial.printf("Stored file : %s, size : %d\n", entry.name(), entry.size());
+    entry.close();  // 使い終わったファイルを閉じる
+  }
+  file.close();
 }
 
 void setup() {
@@ -84,6 +124,8 @@ void setup() {
   multiplex.init();
   pwm.init();
   wave.init();
+
+  spiffsInfo();
 
   // Create semaphore to inform us when the timer has fired
   timerSemProCPU = xSemaphoreCreateBinary();
